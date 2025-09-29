@@ -29,7 +29,7 @@ const authMiddleware = (req, res, next) => {
   if (token && token === "admin-authenticated") {
     next();
   } else {
-    res.redirect("/login.html");
+    res.redirect("/login");
   }
 };
 
