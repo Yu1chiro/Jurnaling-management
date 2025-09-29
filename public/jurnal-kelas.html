@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jurnal Kelas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .form-input:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            /* blue-500 */
+            border-color: #3B82F6;
+            /* blue-500 */
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="mb-8 p-6 bg-white rounded-xl shadow-md border border-gray-200">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-800">Jurnal Mengajar</h1>
+                    <p class="text-gray-500 mt-1">Atmin malas manual</p>
+                </div>
+                <a href="/dashboard" class="text-white rounded-lg px-3 bg-blue-600 py-3 ">Kembali ke
+                    Dashboard</a>
+            </div>
+            <hr class="my-4 border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                <div>
+                    <label for="class-filter" class="block text-sm font-medium text-gray-700 mb-1">Pilih Kelas</label>
+                    <select id="class-filter" class="w-full p-2 border border-gray-300 rounded-md shadow-sm form-input">
+                    </select>
+                </div>
+                <div>
+                    <label for="date-display" class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                    <input type="date" id="date-display"
+                        class="w-full p-2 border border-gray-300 rounded-md shadow-sm form-input bg-gray-50">
+                </div>
+            </div>
+        </header>
+
+        <main class="space-y-8">
+
+            <section class="p-6 bg-white rounded-xl shadow-md border border-gray-200">
+                <h2 id="form-title" class="text-xl font-semibold text-blue-700 mb-4">Tambah Jurnal Baru</h2>
+                <form id="journal-form" class="space-y-4">
+                    <input type="hidden" id="journal-id">
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="learning-achievement" class="block text-sm font-medium">Capaian
+                                Pembelajaran</label>
+                            <textarea id="learning-achievement" rows="3" required
+                                class="mt-1 w-full p-2 border border-gray-300 rounded-md form-input"></textarea>
+                        </div>
+                        <div>
+                            <label for="material-element" class="block text-sm font-medium">Elemen Materi</label>
+                            <textarea id="material-element" rows="3" required
+                                class="mt-1 w-full p-2 border border-gray-300 rounded-md form-input"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="agenda" class="block text-sm font-medium">Agenda</label>
+                            <textarea id="agenda" rows="3" required
+                                class="mt-1 w-full p-2 border border-gray-300 rounded-md form-input"></textarea>
+
+                        </div>
+                        <div>
+                            <label for="method" class="block text-sm font-medium">Metode</label>
+                            <textarea id="method" rows="3" required
+                                class="mt-1 w-full p-2 border border-gray-300 rounded-md form-input"></textarea>
+
+                        </div>
+                    </div>
+
+                    <div class="flex items-center pt-2">
+                        <input id="is-active" type="checkbox"
+                            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" checked>
+                        <label for="is-active" class="ml-2 block text-sm text-gray-900">Keterangan (Aktif)</label>
+                    </div>
+
+                    <div class="flex items-center space-x-3 pt-2">
+                        <button type="submit"
+                            class="w-auto flex-grow-0 justify-center py-2 px-8 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                            Simpan
+                        </button>
+                        <button type="button" id="cancel-edit"
+                            class="w-auto flex-grow-0 justify-center py-2 px-8 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors hidden">
+                            Batal
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="p-6 bg-white rounded-xl shadow-md border border-gray-200">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Daftar Jurnal <span id="journal-date-title"
+                        class="font-normal text-gray-600"></span></h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Detail Pembelajaran</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journal-table-body" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="3" class="text-center p-8 text-gray-500">Sedang memuat data mungkin memerlukan waktu beberapa menit</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // SEMUA SCRIPT JavaScript TETAP SAMA, TIDAK ADA PERUBAHAN
+            const classFilter = document.getElementById('class-filter');
+            const dateDisplay = document.getElementById('date-display');
+            const journalTableBody = document.getElementById('journal-table-body');
+            const journalForm = document.getElementById('journal-form');
+            const formTitle = document.getElementById('form-title');
+            const journalDateTitle = document.getElementById('journal-date-title');
+            const journalIdInput = document.getElementById('journal-id');
+            const cancelEditBtn = document.getElementById('cancel-edit');
+
+            // SweetAlert Toast
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+
+            // Inisialisasi Tanggal Hari Ini
+            const today = new Date().toISOString().split('T')[0];
+            dateDisplay.value = today;
+            journalDateTitle.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+
+            // 1. Muat data kelas ke dalam dropdown
+            const loadClasses = async () => {
+                try {
+                    const response = await fetch('/api/classes');
+                    if (!response.ok) throw new Error('Gagal memuat kelas');
+                    const classes = await response.json();
+
+                    classFilter.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                    classes.forEach(c => {
+                        const option = document.createElement('option');
+                        option.value = c.id;
+                        option.textContent = c.class_name;
+                        classFilter.appendChild(option);
+                    });
+                    // Otomatis pilih kelas pertama
+                    if (classes.length > 0) {
+                        classFilter.value = classes[0].id;
+                        loadJournals();
+                    }
+                } catch (error) {
+                    console.error(error);
+                    Toast.fire({ icon: 'error', title: 'Gagal memuat data kelas!' });
+                }
+            };
+
+            // 2. Muat data jurnal berdasarkan filter
+            const loadJournals = async () => {
+                const classId = classFilter.value;
+                const date = dateDisplay.value;
+                if (!classId || !date) {
+                    journalTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-8 text-gray-500">Silakan pilih kelas dan tanggal.</td></tr>`;
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/journals?classId=${classId}&date=${date}`);
+                    if (!response.ok) throw new Error('Gagal memuat jurnal');
+                    const journals = await response.json();
+                    renderTable(journals);
+                } catch (error) {
+                    console.error(error);
+                    Toast.fire({ icon: 'error', title: 'Gagal memuat jurnal!' });
+                    journalTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-8 text-red-500">Terjadi kesalahan saat memuat data.</td></tr>`;
+                }
+            };
+
+            // 3. Render tabel jurnal
+            const renderTable = (journals) => {
+                journalTableBody.innerHTML = '';
+                if (journals.length === 0) {
+                    journalTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-8 text-gray-500">Oops belum ada jurnal di kelas ini! silahkan tambahkan jurnal</td></tr>`;
+                    return;
+                }
+                journals.forEach(journal => {
+                    const row = document.createElement('tr');
+                    row.dataset.id = journal.id;
+                    row.innerHTML = `
+                <td class="px-6 py-4">
+                    <div class="text-sm font-semibold text-gray-900 break-words">${journal.learning_achievement}</div>
+                    <div class="text-xs text-gray-500 mt-1 space-y-1">
+                        <p><span class="font-medium">Elemen:</span> <span class="break-words">${journal.material_element}</span></p>
+                        <p><span class="font-medium">Agenda:</span> <span class="break-words">${journal.agenda}</span></p>
+                        <p><span class="font-medium">Metode:</span> <span class="break-words">${journal.method}</span></p>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${journal.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                        ${journal.is_active ? 'Aktif' : 'Tidak Aktif'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button class="text-indigo-600 hover:text-indigo-900 edit-btn">Edit</button>
+                    <button class="text-red-600 hover:text-red-900 ml-4 delete-btn">Hapus</button>
+                </td>
+            `;
+                    journalTableBody.appendChild(row);
+                });
+            };
+
+            // 4. Handle submit form (Create & Update)
+            journalForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = journalIdInput.value;
+                const isUpdate = !!id;
+
+                const journalData = {
+                    classId: classFilter.value,
+                    journalDate: dateDisplay.value,
+                    learningAchievement: document.getElementById('learning-achievement').value,
+                    materialElement: document.getElementById('material-element').value,
+                    agenda: document.getElementById('agenda').value,
+                    method: document.getElementById('method').value,
+                    isActive: document.getElementById('is-active').checked
+                };
+
+                const url = isUpdate ? `/api/journals/${id}` : '/api/journals';
+                const method = isUpdate ? 'PUT' : 'POST';
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(journalData)
+                    });
+
+                    if (!response.ok) throw new Error(isUpdate ? 'Gagal memperbarui data' : 'Gagal menyimpan data');
+
+                    Toast.fire({ icon: 'success', title: `Jurnal berhasil ${isUpdate ? 'diperbarui' : 'disimpan'}!` });
+                    resetForm();
+                    loadJournals();
+                } catch (error) {
+                    console.error(error);
+                    Toast.fire({ icon: 'error', title: error.message });
+                }
+            });
+
+            // 5. Handle klik pada tabel (Edit & Delete)
+            journalTableBody.addEventListener('click', async (e) => {
+                const target = e.target;
+                const row = target.closest('tr');
+                if (!row) return;
+                const id = row.dataset.id;
+
+                if (target.classList.contains('edit-btn')) {
+                    const cells = row.querySelectorAll('td');
+                    const details = cells[0].querySelectorAll('span.break-words');
+
+                    journalIdInput.value = id;
+                    document.getElementById('learning-achievement').value = cells[0].querySelector('.text-sm').textContent;
+                    document.getElementById('material-element').value = details[0].textContent;
+                    document.getElementById('agenda').value = details[1].textContent;
+                    document.getElementById('method').value = details[2].textContent;
+                    document.getElementById('is-active').checked = cells[1].querySelector('span').textContent.trim() === 'Aktif';
+
+                    formTitle.textContent = 'Edit Jurnal';
+                    cancelEditBtn.classList.remove('hidden');
+                    document.getElementById('form-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                if (target.classList.contains('delete-btn')) {
+                    Swal.fire({
+                        title: 'Anda yakin?',
+                        text: "Data jurnal ini akan dihapus permanen!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then(async (result) => {
+                        if (result.isConfirmed) {
+                            try {
+                                const response = await fetch(`/api/journals/${id}`, { method: 'DELETE' });
+                                if (!response.ok) throw new Error('Gagal menghapus data');
+                                Toast.fire({ icon: 'success', title: 'Jurnal berhasil dihapus.' });
+                                loadJournals();
+                            } catch (error) {
+                                console.error(error);
+                                Toast.fire({ icon: 'error', title: error.message });
+                            }
+                        }
+                    })
+                }
+            });
+
+            // Fungsi untuk reset form
+            const resetForm = () => {
+                journalForm.reset();
+                journalIdInput.value = '';
+                formTitle.textContent = 'Tambah Jurnal Baru';
+                cancelEditBtn.classList.add('hidden');
+            };
+
+            cancelEditBtn.addEventListener('click', resetForm);
+
+            // Event listener untuk filter
+            classFilter.addEventListener('change', loadJournals);
+            dateDisplay.addEventListener('change', (e) => {
+                journalDateTitle.textContent = new Date(e.target.value).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                loadJournals();
+            });
+
+            // Inisialisasi
+            loadClasses();
+        });
+    </script>
+
+</body>
+
+</html>

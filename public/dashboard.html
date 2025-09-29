@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+        }
+
+        tr[data-status="Izin"] {
+            background-color: #c6f6d5;
+        }
+
+        /* Hijau lebih tegas */
+        tr[data-status="Sakit"] {
+            background-color: #fefcbf;
+        }
+
+        /* Kuning-oranye lebih pekat */
+        tr[data-status="Alpa"] {
+            background-color: #fed7d7;
+        }
+
+        /* Merah muda lebih kuat */
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div class="min-h-screen">
+        <header class="bg-white shadow-md sticky top-0 z-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">Dashboard Manajemen Siswa</h1>
+                <button id="logoutButton"
+                    class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition">Logout</button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                    <div>
+                        <label for="classFilter" class="block text-sm font-medium text-gray-700 mb-1">Pilih
+                            Kelas</label>
+                        <select id="classFilter"
+                            class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></select>
+                    </div>
+                    <div>
+                        <label for="dateFilter" class="block text-sm font-medium text-gray-700 mb-1">Pilih Tanggal
+                            Absen</label>
+                        <input type="date" id="dateFilter"
+                            class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                                        <button onclick="window.location.href='/jurnal-kelas'"
+                        class="bg-blue-600 px-3 py-3 hover:bg-blue-700 rounded-lg font-semibold text-white">Jurnal Siswa</button>
+
+                    <div>
+                        <button id="downloadExcel"
+                            class="w-full bg-green-600 text-white font-bold py-3 px-3 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            Download laporan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-blue-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                    No</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                    Nama Siswa</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                    Nilai</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                    Status Hari Ini</th>
+                                <th
+                                    class="px-6 py-3 text-center text-xs font-bold text-blue-800 uppercase tracking-wider">
+                                    Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-table-body" class="bg-white divide-y divide-gray-200"></tbody>
+                    </table>
+                    <p id="loading-stats" class="px-6 text-center py-4 text-sm text-gray-500">Sedang memuat data proses
+                        ini mungkin memerlukan waktu beberapa menit.....
+                    </p>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="notesModal"
+        class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-30">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-full overflow-y-auto">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 class="text-xl font-semibold"><span id="modalStudentName" class="text-blue-600"></span></h3>
+                <button id="closeModal" class="text-gray-400 text-3xl hover:text-gray-600">
+                    &times;
+                </button>
+
+            </div>
+            <div class="p-6">
+                <div id="notesList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2"></div>
+                <h4 class="font-semibold mb-2">Tambah Catatan Baru</h4>
+                <textarea id="newNoteText" class="w-full p-2 border rounded-md" rows="3"
+                    placeholder="Contoh: Meninggalkan kelas pada jam ke-3..."></textarea>
+                <button id="saveNoteButton"
+                    class="mt-4 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Simpan
+                    Catatan</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-gray-800 text-white py-2 px-5 rounded-lg shadow-xl transition-opacity duration-300 opacity-0">
+        <p id="toast-message"></p>
+    </div>
+    <script>
+        // DOM Elements
+        const classFilter = document.getElementById('classFilter');
+        const dateFilter = document.getElementById('dateFilter');
+        const tableBody = document.getElementById('students-table-body');
+        const logoutButton = document.getElementById('logoutButton');
+        const downloadExcelButton = document.getElementById('downloadExcel');
+        const notesModal = document.getElementById('notesModal');
+        const closeModalButton = document.getElementById('closeModal');
+        const saveNoteButton = document.getElementById('saveNoteButton');
+        const modalStudentName = document.getElementById('modalStudentName');
+        const notesList = document.getElementById('notesList');
+        const newNoteText = document.getElementById('newNoteText');
+        const Loading = document.getElementById('loading-stats');
+
+        // Element untuk notifikasi Toast
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        let toastTimeout;
+
+        // State variable
+        let currentStudentIdForNote = null;
+
+        // --- FUNGSI UNTUK NOTIFIKASI ---
+        const showToast = (message, type = 'success') => {
+            clearTimeout(toastTimeout);
+            toastMessage.textContent = message;
+
+            toast.style.backgroundColor = type === 'success' ? '#22c55e' : '#ef4444'; // Hijau atau Merah
+            toast.classList.remove('opacity-0');
+
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('opacity-0');
+            }, 3000);
+        };
+
+        // --- FUNGSI UNTUK MENAMPILKAN DATA (RENDER) ---
+        const renderClasses = (classes) => {
+            classFilter.innerHTML = classes.map(c => `<option value="${c.id}">${c.class_name}</option>`).join('');
+        };
+
+        const renderStudents = (students) => {
+            if (!students || students.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Tidak ada data siswa.</td></tr>`;
+                return;
+            }
+            tableBody.innerHTML = students.map((s, i) => {
+                const statuses = ['Hadir', 'Izin', 'Sakit', 'Alpa'];
+                const options = statuses.map(st => `<option value="${st}" ${s.status === st ? 'selected' : ''}>${st}</option>`).join('');
+                return `
+            <tr data-status="${s.status}" class="hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm text-gray-500">${i + 1}</td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">${s.full_name}</td>
+                <td class="px-6 py-4"><input type="number" value="${s.grade}" class="w-20 p-1 border rounded-md grade-input" data-id="${s.id}" min="0" max="100"></td>
+                <td class="px-6 py-4"><select class="p-1 border rounded-md status-select" data-id="${s.id}">${options}</select></td>
+                <td class="px-6 py-4 text-center">
+                    <button class="text-white bg-gray-700 px-3 py-3 rounded-lg font-semibold note-button" data-id="${s.id}" data-name="${s.full_name}">Catatan</button>
+                </td>
+            </tr>`;
+            }).join('');
+        };
+
+        // --- FUNGSI UNTUK MENGAMBIL DATA (FETCH) ---
+        const loadStudentsOnFilterChange = async () => {
+            const classId = classFilter.value;
+            const date = dateFilter.value;
+            if (!classId || !date) return;
+
+            tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Memuat data...</td></tr>`;
+            try {
+                const response = await fetch(`/api/students?classId=${classId}&date=${date}`);
+                if (!response.ok) throw new Error('Gagal memuat siswa');
+                const students = await response.json();
+                renderStudents(students);
+            } catch (error) {
+                console.error(error);
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Gagal memuat data siswa.</td></tr>`;
+            }
+        };
+
+        const loadInitialData = async () => {
+            try {
+                const response = await fetch('/api/initial-data');
+                if (!response.ok) throw new Error('Gagal memuat data awal');
+                const data = await response.json();
+                renderClasses(data.classes);
+                renderStudents(data.students);
+                Loading.classList.add('hidden');
+            } catch (error) {
+                console.error(error);
+                classFilter.innerHTML = `<option disabled>Gagal memuat</option>`;
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Gagal memuat data awal.</td></tr>`;
+            }
+        };
+
+        // --- FUNGSI EVENT HANDLERS ---
+        const handleTableChange = async (e) => {
+            const target = e.target;
+            const id = target.dataset.id;
+            if (!id) return;
+
+            try {
+                let response;
+                if (target.classList.contains('grade-input')) {
+                    response = await fetch(`/api/student/${id}/grade`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ grade: target.value })
+                    });
+                } else if (target.classList.contains('status-select')) {
+                    const status = target.value;
+                    response = await fetch(`/api/student/${id}/status`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ date: dateFilter.value, status: status })
+                    });
+                    if (response.ok) target.closest('tr').dataset.status = status;
+                }
+
+                if (response && response.ok) {
+                    showToast('Data berhasil disimpan!', 'success');
+                } else if (response) {
+                    throw new Error('Gagal menyimpan data ke server.');
+                }
+            } catch (error) {
+                console.error("Save failed:", error);
+                showToast('Gagal menyimpan data!', 'error');
+            }
+        };
+
+        const handleTableClick = (e) => {
+            if (e.target.classList.contains('note-button')) {
+                currentStudentIdForNote = e.target.dataset.id;
+                modalStudentName.textContent = e.target.dataset.name;
+                openNotesModal();
+            }
+        };
+
+        const downloadReport = () => {
+            const classId = classFilter.value;
+            const month = dateFilter.value.substring(0, 7);
+            if (!classId || !month) {
+                alert('Pilih kelas dan tanggal terlebih dahulu.');
+                return;
+            }
+            window.location.href = `/api/report/excel?classId=${classId}&month=${month}`;
+        };
+
+        // --- FUNGSI MODAL ---
+        const openNotesModal = async () => {
+            notesList.innerHTML = '<p>Memuat catatan...</p>';
+            newNoteText.value = '';
+            notesModal.classList.remove('hidden');
+            try {
+                const response = await fetch(`/api/student/${currentStudentIdForNote}/notes`);
+                if (!response.ok) throw new Error('Gagal memuat catatan');
+                const notes = await response.json();
+                if (notes.length > 0) {
+                    notesList.innerHTML = notes.map(note => `
+                    <div class="bg-gray-100 p-3 rounded-md">
+                        <p class="text-sm text-gray-800">${note.note_text}</p>
+                        <p class="text-xs text-gray-500 text-right mt-1">${note.formatted_date}</p>
+                    </div>
+                `).join('');
+                } else {
+                    notesList.innerHTML = '<p class="text-sm text-gray-500">Belum ada catatan untuk siswa ini.</p>';
+                }
+            } catch (error) {
+                notesList.innerHTML = '<p class="text-sm text-red-500">Gagal memuat catatan.</p>';
+            }
+        };
+
+        const closeNotesModal = () => notesModal.classList.add('hidden');
+
+        const saveNote = async () => {
+            const noteText = newNoteText.value.trim();
+            if (!noteText) return;
+
+            try {
+                const response = await fetch(`/api/student/${currentStudentIdForNote}/note`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ noteText: noteText })
+                });
+                if (!response.ok) throw new Error('Gagal menyimpan catatan');
+                showToast('Catatan berhasil disimpan!', 'success');
+                openNotesModal(); // Muat ulang daftar catatan
+            } catch (error) {
+                showToast('Gagal menyimpan catatan!', 'error');
+            }
+        };
+
+        // --- INISIALISASI ---
+        const initialize = () => {
+            dateFilter.value = new Date().toISOString().split('T')[0];
+
+            // Pasang semua event listeners
+            classFilter.addEventListener('change', loadStudentsOnFilterChange);
+            dateFilter.addEventListener('change', loadStudentsOnFilterChange);
+            tableBody.addEventListener('change', handleTableChange);
+            tableBody.addEventListener('click', handleTableClick);
+            downloadExcelButton.addEventListener('click', downloadReport);
+            closeModalButton.addEventListener('click', closeNotesModal);
+            saveNoteButton.addEventListener('click', saveNote);
+            logoutButton.addEventListener('click', async () => {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/';
+            });
+
+            // Panggil fungsi yang sudah dioptimalkan untuk memuat data awal
+            loadInitialData();
+        };
+
+        // Jalankan semuanya saat halaman selesai dimuat
+        window.addEventListener('load', initialize);
+    </script>
+</body>
+
+</html>
