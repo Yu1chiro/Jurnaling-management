@@ -224,44 +224,48 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
    // GANTI FUNGSI INI
-    journalForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = journalIdInput.value;
-        const journalData = {
-            classId: classFilter.value, journalDate: dateDisplay.value,
-            learningAchievement: document.getElementById('learning-achievement').value,
-            materialElement: document.getElementById('material-element').value,
-            agenda: document.getElementById('agenda').value, method: document.getElementById('method').value,
-            isActive: document.getElementById('is-active').checked
-        };
-        const url = id ? `/api/journals/${id}` : '/api/journals';
-        const method = id ? 'PUT' : 'POST';
+   journalForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = journalIdInput.value;
+    const journalData = {
+        classId: classFilter.value,
+        // Pastikan Anda selalu mengirim tanggal dari date picker
+        journalDate: dateDisplay.value,
+        learningAchievement: document.getElementById('learning-achievement').value,
+        materialElement: document.getElementById('material-element').value,
+        agenda: document.getElementById('agenda').value,
+        method: document.getElementById('method').value,
+        isActive: document.getElementById('is-active').checked
+    };
+    const url = id ? `/api/journals/${id}` : '/api/journals';
+    const method = id ? 'PUT' : 'POST';
 
-        // --> BARIS BARU
-        showLoading(id ? 'Memperbarui jurnal...' : 'Menyimpan jurnal...');
+    showLoading(id ? 'Memperbarui jurnal...' : 'Menyimpan jurnal...');
 
-        try {
-            const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(journalData) });
-            const savedJournal = await response.json();
-            if (!response.ok) throw new Error(savedJournal.error || 'Gagal menyimpan data');
-            Toast.fire({ icon: 'success', title: `Jurnal berhasil ${id ? 'diperbarui' : 'disimpan'}!` });
-            
-            if (id) {
-                const index = currentJournals.findIndex(j => j.id == id);
-                if (index !== -1) currentJournals[index] = savedJournal;
-            } else {
-                currentJournals.push(savedJournal);
-            }
-            renderTable(currentJournals);
-            resetForm();
-        } catch (error) {
-            Toast.fire({ icon: 'error', title: error.message });
-        } finally {
-            // --> BARIS BARU
-            hideLoading();
-        }
-    });
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(journalData)
+        });
+        const savedJournal = await response.json();
+        if (!response.ok) throw new Error(savedJournal.error || 'Gagal menyimpan data');
+        
+        Toast.fire({ icon: 'success', title: `Jurnal berhasil ${id ? 'diperbarui' : 'disimpan'}!` });
+        
+        resetForm();
+        
+        // GANTI BLOK LOGIKA IF/ELSE DENGAN INI:
+        // Cukup panggil ulang loadJournals(). Ini akan otomatis me-refresh
+        // tampilan sesuai tanggal yang aktif di date picker.
+        await loadJournals();
 
+    } catch (error) {
+        Toast.fire({ icon: 'error', title: error.message });
+    } finally {
+        hideLoading();
+    }
+});
     // GANTI FUNGSI INI
     journalTableBody.addEventListener('click', async (e) => {
         const target = e.target;

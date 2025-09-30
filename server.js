@@ -39,7 +39,6 @@ const initializeDatabase = async () => {
   try {
     await client.query("BEGIN");
 
-    // Membuat semua tabel utama jika belum ada
     await client.query(`
             CREATE TABLE IF NOT EXISTS classes ( id SERIAL PRIMARY KEY, class_name VARCHAR(50) UNIQUE NOT NULL, homeroom_teacher VARCHAR(100) );
             CREATE TABLE IF NOT EXISTS students ( id SERIAL PRIMARY KEY, nipd VARCHAR(20) UNIQUE NOT NULL, full_name VARCHAR(100) NOT NULL, gender CHAR(1), class_id INT REFERENCES classes(id) ON DELETE CASCADE, grade INT DEFAULT 0 );
@@ -146,11 +145,11 @@ app.delete("/api/students/:id", authMiddleware, async (req, res) => {
 });
 
 // --- Rute API Data Utama ---
-app.get('/api/initial-data', authMiddleware, async (req, res) => {
-    try {
-        const [classesResult, studentsResult] = await Promise.all([
-            pool.query('SELECT id, class_name FROM classes ORDER BY class_name'),
-            pool.query(`
+app.get("/api/initial-data", authMiddleware, async (req, res) => {
+  try {
+    const [classesResult, studentsResult] = await Promise.all([
+      pool.query("SELECT id, class_name FROM classes ORDER BY class_name"),
+      pool.query(`
                 SELECT 
                     s.id, s.nipd, s.full_name, s.gender, s.grade,
                     COALESCE(ss.status, 'Hadir') as status,
@@ -159,19 +158,63 @@ app.get('/api/initial-data', authMiddleware, async (req, res) => {
                 LEFT JOIN student_status ss ON s.id = ss.student_id AND ss.status_date = CURRENT_DATE
                 WHERE s.class_id = (SELECT id FROM classes ORDER BY class_name LIMIT 1)
                 ORDER BY s.full_name
-            `)
-        ]);
-        res.json({ classes: classesResult.rows, students: studentsResult.rows });
-    } catch (error) {
-        res.status(500).json({ error: 'Gagal mengambil data awal dashboard' });
-    }
+            `),
+    ]);
+    res.json({ classes: classesResult.rows, students: studentsResult.rows });
+  } catch (error) {
+    res.status(500).json({ error: "Gagal mengambil data awal dashboard" });
+  }
 });
+// GANTI DENGAN BLOK API INI
+app.delete("/api/cleanup-daily-data", authMiddleware, async (req, res) => {
+  const { date, classId } = req.body; // Terima classId dari request
+  if (!date || !classId) {
+    return res.status(400).json({ error: "Parameter tanggal dan ID Kelas dibutuhkan" });
+  }
 
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // 1. RESET NILAI: Update nilai siswa di kelas tersebut menjadi 0
+    const resetGradeResult = await client.query("UPDATE students SET grade = 0 WHERE class_id = $1", [classId]);
+
+    // 2. HAPUS STATUS: Hapus data status (izin, sakit, alpa) untuk tanggal & kelas tersebut
+    const statusResult = await client.query(
+      `
+            DELETE FROM student_status 
+            WHERE status_date = $1 
+            AND student_id IN (SELECT id FROM students WHERE class_id = $2)
+        `,
+      [date, classId]
+    );
+
+    // 3. HAPUS JURNAL: Hapus data jurnal kelas untuk tanggal & kelas tersebut
+    const journalResult = await client.query("DELETE FROM class_journals WHERE journal_date = $1 AND class_id = $2", [date, classId]);
+
+    await client.query("COMMIT");
+
+    res.json({
+      success: true,
+      message: "Data nilai, absensi, dan jurnal harian berhasil direset.",
+      resetGradesCount: resetGradeResult.rowCount,
+      deletedStatusCount: statusResult.rowCount,
+      deletedJournalCount: journalResult.rowCount,
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error cleaning up daily data:", error);
+    res.status(500).json({ error: "Gagal membersihkan data harian" });
+  } finally {
+    client.release();
+  }
+});
 // PERBAIKAN: Menambahkan EXISTS subquery untuk cek catatan (`has_notes`)
-app.get('/api/students', authMiddleware, async (req, res) => {
-    const { classId, date } = req.query;
-    try {
-        const result = await pool.query(`
+app.get("/api/students", authMiddleware, async (req, res) => {
+  const { classId, date } = req.query;
+  try {
+    const result = await pool.query(
+      `
             SELECT 
                 s.id, s.nipd, s.full_name, s.gender, s.grade,
                 COALESCE(ss.status, 'Hadir') as status,
@@ -180,11 +223,13 @@ app.get('/api/students', authMiddleware, async (req, res) => {
             LEFT JOIN student_status ss ON s.id = ss.student_id AND ss.status_date = $2
             WHERE s.class_id = $1
             ORDER BY s.full_name
-        `, [classId, date]);
-        res.json(result.rows);
-    } catch (error) {
-        res.status(500).json({ error: 'Gagal mengambil data siswa' });
-    }
+        `,
+      [classId, date]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Gagal mengambil data siswa" });
+  }
 });
 
 app.put("/api/student/:id/grade", authMiddleware, async (req, res) => {
@@ -228,33 +273,33 @@ app.post("/api/student/:id/note", authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Gagal menyimpan catatan" });
   }
 });
-app.delete('/api/notes/:noteId', authMiddleware, async (req, res) => {
-    const { noteId } = req.params;
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-        // Ambil student_id dulu sebelum menghapus, untuk cek sisa catatan
-        const studentResult = await client.query('SELECT student_id FROM student_notes WHERE id = $1', [noteId]);
-        if (studentResult.rows.length === 0) {
-            throw new Error('Catatan tidak ditemukan');
-        }
-        const { student_id } = studentResult.rows[0];
-
-        // Hapus catatan
-        await client.query('DELETE FROM student_notes WHERE id = $1', [noteId]);
-
-        // Cek apakah masih ada catatan lain untuk siswa tersebut
-        const remainingNotesResult = await client.query('SELECT EXISTS (SELECT 1 FROM student_notes WHERE student_id = $1) as "hasNotes"', [student_id]);
-        
-        await client.query('COMMIT');
-        res.json({ success: true, hasNotes: remainingNotesResult.rows[0].hasNotes });
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error("Error deleting note:", error);
-        res.status(500).json({ error: 'Gagal menghapus catatan' });
-    } finally {
-        client.release();
+app.delete("/api/notes/:noteId", authMiddleware, async (req, res) => {
+  const { noteId } = req.params;
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    // Ambil student_id dulu sebelum menghapus, untuk cek sisa catatan
+    const studentResult = await client.query("SELECT student_id FROM student_notes WHERE id = $1", [noteId]);
+    if (studentResult.rows.length === 0) {
+      throw new Error("Catatan tidak ditemukan");
     }
+    const { student_id } = studentResult.rows[0];
+
+    // Hapus catatan
+    await client.query("DELETE FROM student_notes WHERE id = $1", [noteId]);
+
+    // Cek apakah masih ada catatan lain untuk siswa tersebut
+    const remainingNotesResult = await client.query('SELECT EXISTS (SELECT 1 FROM student_notes WHERE student_id = $1) as "hasNotes"', [student_id]);
+
+    await client.query("COMMIT");
+    res.json({ success: true, hasNotes: remainingNotesResult.rows[0].hasNotes });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error deleting note:", error);
+    res.status(500).json({ error: "Gagal menghapus catatan" });
+  } finally {
+    client.release();
+  }
 });
 // --- API Laporan Excel ---
 app.get("/api/report/excel", authMiddleware, async (req, res) => {
@@ -311,19 +356,36 @@ app.post("/api/journals", authMiddleware, async (req, res) => {
   }
 });
 
+// --- File: server.js ---
+
 app.put("/api/journals/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const { learningAchievement, materialElement, agenda, method, isActive } = req.body;
+  // TAMBAHKAN 'journalDate' dari body request
+  const { learningAchievement, materialElement, agenda, method, isActive, journalDate } = req.body;
+  // Pastikan tanggal diterima
+  if (!journalDate) {
+    return res.status(400).json({ error: "Parameter tanggal dibutuhkan" });
+  }
+
   try {
     const result = await pool.query(
       `UPDATE class_journals 
-             SET learning_achievement = $1, material_element = $2, agenda = $3, method = $4, is_active = $5, updated_at = NOW() 
-             WHERE id = $6 
-             RETURNING id, TO_CHAR(journal_date, 'YYYY-MM-DD') as journal_date, learning_achievement, material_element, agenda, method, is_active`,
-      [learningAchievement, materialElement, agenda, method, isActive, id]
+       SET 
+         learning_achievement = $1, 
+         material_element = $2, 
+         agenda = $3, 
+         method = $4, 
+         is_active = $5, 
+         updated_at = NOW(),
+         journal_date = $6 -- TAMBAHKAN baris ini untuk update tanggal
+       WHERE id = $7 -- Sesuaikan nomor parameter menjadi 7
+       RETURNING id, TO_CHAR(journal_date, 'YYYY-MM-DD') as journal_date, learning_achievement, material_element, agenda, method, is_active`,
+      // TAMBAHKAN 'journalDate' ke dalam array parameter
+      [learningAchievement, materialElement, agenda, method, isActive, journalDate, id]
     );
     res.json(result.rows[0]);
   } catch (error) {
+    console.error("Update journal error:", error); // Tambahkan log untuk debugging
     res.status(500).json({ error: "Gagal memperbarui jurnal" });
   }
 });
