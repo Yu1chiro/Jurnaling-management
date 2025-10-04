@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -10,33 +9,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <style>
-    body {
-      font-family: "Inter", sans-serif;
-    }
-
-    .modal-overlay {
-      transition: opacity 0.3s ease;
-    }
-
-    tr[data-status="Izin"] {
-      background-color: #c6f6d5;
-    }
-
-    tr[data-status="Sakit"] {
-      background-color: #fefcbf;
-    }
-
-    tr[data-status="Alpa"] {
-      background-color: #fed7d7;
-    }
-
+    body { font-family: "Inter", sans-serif; }
+    .modal-overlay { transition: opacity 0.3s ease; }
+    tr[data-status="Izin"] { background-color: #c6f6d5; }
+    tr[data-status="Sakit"] { background-color: #fefcbf; }
+    tr[data-status="Alpa"] { background-color: #fed7d7; }
     #bulkStudentInput {
       line-height: 1.8;
       border-color: #d1d5db;
       background-image: linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
       background-size: 100% 1.8em;
     }
-
     .note-indicator {
       display: inline-block;
       width: 8px;
@@ -46,72 +29,45 @@
       margin-left: 8px;
       animation: pulse 2s infinite;
     }
-
     @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.5;
-      }
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
   </style>
 </head>
-
 <body class="bg-gray-100">
   <div class="min-h-screen">
     <header class="bg-white shadow-md sticky top-0 z-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-800">Dashboard Manajemen Siswa</h1>
         <div>
-          <button id="manageDataButton"
-            class="bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 transition mr-4"><i
-              class="fas fa-database mr-2"></i>Kelola Data</button>
-          <button id="logoutButton"
-            class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition"><i
-              class="fas fa-sign-out-alt mr-2"></i>Logout</button>
+          <button id="manageDataButton" class="bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 transition mr-4"><i class="fas fa-database mr-2"></i>Kelola Data</button>
+          <button id="logoutButton" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button>
         </div>
       </div>
     </header>
-
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
           <div>
             <label for="classFilter" class="block text-sm font-medium text-gray-700 mb-1">Pilih Kelas</label>
-            <select id="classFilter"
-              class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></select>
+            <select id="classFilter" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></select>
           </div>
           <div>
             <label for="dateFilter" class="block text-sm font-medium text-gray-700 mb-1">Pilih Tanggal</label>
-            <input type="date" id="dateFilter"
-              class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+            <input type="date" id="dateFilter" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
           </div>
           <div>
             <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Cari Siswa</label>
-            <input type="text" id="searchInput" placeholder="Ketik nama siswa..."
-              class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+            <input type="text" id="searchInput" placeholder="Ketik nama siswa..." class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" />
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <button onclick="window.location.href='/jurnal-kelas'"
-              class="bg-blue-600 py-3 px-3 hover:bg-blue-700 rounded-lg font-semibold text-white text-sm">Kelola Jurnal
-              Kelas</button>
-            <button id="downloadExcel"
-              class="bg-green-600 text-white font-bold py-3 px-3 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 text-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd"
-                  d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
-                  clip-rule="evenodd" />
-              </svg>
-              Laporan
-            </button>
+          <div class="lg:col-span-2 grid grid-cols-3 gap-3">
+            <button onclick="window.location.href='/jurnal-kelas'" class="bg-blue-600 py-3 px-3 hover:bg-blue-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">Jurnal</button>
+            <button onclick="window.location.href='/history'" class="bg-purple-600 py-3 px-3 hover:bg-purple-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">Riwayat</button>
+            <button id="downloadExcel" class="bg-green-600 text-white font-bold py-3 px-3 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 text-sm">Laporan</button>
           </div>
         </div>
       </div>
-
       <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="overflow-x-auto">
           <table class="min-w-full divide-y divide-gray-200">
@@ -130,21 +86,16 @@
       </div>
     </main>
   </div>
-  <div id="loadingOverlay"
-    class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-[60]">
+  <div id="loadingOverlay" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-[60]">
     <div class="bg-white rounded-lg p-8 flex items-center gap-4 shadow-xl">
-      <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
-        viewBox="0 0 24 24">
+      <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-        </path>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
       <span id="loadingMessage" class="text-lg font-medium text-gray-700">Menyimpan data...</span>
     </div>
   </div>
-  <div id="manageDataModal"
-    class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-40">
+  <div id="manageDataModal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-40">
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
       <div class="p-5 border-b flex justify-between items-center">
         <h3 class="text-2xl font-bold text-gray-800">Kelola Data Master</h3>
@@ -155,21 +106,10 @@
           <h4 id="classFormTitle" class="text-xl font-semibold mb-4 text-blue-700">Manajemen Kelas</h4>
           <form id="classForm" class="mb-6 space-y-4">
             <input type="hidden" id="classIdInput" />
-            <div>
-              <label for="newClassName" class="block text-sm font-medium text-gray-700">Nama Kelas</label><input
-                type="text" id="newClassName" placeholder="Contoh: XII-K" required
-                class="mt-1 w-full p-2 border border-gray-300 rounded-md" />
-            </div>
-            <div>
-              <label for="newHomeroomTeacher" class="block text-sm font-medium text-gray-700">Nama Wali
-                Kelas</label><input type="text" id="newHomeroomTeacher" placeholder="Contoh: John Doe, S.Pd" required
-                class="mt-1 w-full p-2 border border-gray-300 rounded-md" />
-            </div>
+            <div><label for="newClassName" class="block text-sm font-medium text-gray-700">Nama Kelas</label><input type="text" id="newClassName" placeholder="Contoh: XII-K" required class="mt-1 w-full p-2 border border-gray-300 rounded-md" /></div>
+            <div><label for="newHomeroomTeacher" class="block text-sm font-medium text-gray-700">Nama Wali Kelas</label><input type="text" id="newHomeroomTeacher" placeholder="Contoh: John Doe, S.Pd" required class="mt-1 w-full p-2 border border-gray-300 rounded-md" /></div>
             <div class="flex gap-2">
-              <button type="submit" id="submitClassButton"
-                class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Tambah
-                Kelas</button><button type="button" id="cancelEditButton"
-                class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 hidden">Batal</button>
+              <button type="submit" id="submitClassButton" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Tambah Kelas</button><button type="button" id="cancelEditButton" class="w-full bg-gray-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 hidden">Batal</button>
             </div>
           </form>
           <h5 class="font-semibold mb-2">Daftar Kelas</h5>
@@ -178,29 +118,19 @@
         <div>
           <h4 class="text-xl font-semibold mb-4 text-green-700">Tambah Siswa Massal</h4>
           <div class="space-y-4">
-            <div>
-              <label for="classSelectForStudents" class="block text-sm font-medium text-gray-700">Pilih
-                Kelas</label><select id="classSelectForStudents"
-                class="mt-1 w-full p-2 border border-gray-300 rounded-md"></select>
-            </div>
+            <div><label for="classSelectForStudents" class="block text-sm font-medium text-gray-700">Pilih Kelas</label><select id="classSelectForStudents" class="mt-1 w-full p-2 border border-gray-300 rounded-md"></select></div>
             <div>
               <label for="bulkStudentInput" class="block text-sm font-medium text-gray-700">Paste Data Siswa</label>
               <p class="text-xs text-gray-500 mb-2">Format: NIPD [Tab] Nama Lengkap [Tab] Gender (L/P)</p>
-              <textarea id="bulkStudentInput" rows="10"
-                placeholder="12345	Budi Santoso	L&#10;12346	Siti Aminah	P&#10;..."
-                class="w-full p-2 border rounded-md font-mono text-sm shadow-inner"></textarea>
+              <textarea id="bulkStudentInput" rows="10" placeholder="12345  Budi Santoso  L&#10;12346 Siti Aminah P&#10;..." class="w-full p-2 border rounded-md font-mono text-sm shadow-inner"></textarea>
             </div>
-            <button id="saveBulkStudents"
-              class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700">Simpan
-              Siswa</button>
+            <button id="saveBulkStudents" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700">Simpan Siswa</button>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <div id="notesModal"
-    class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+  <div id="notesModal" class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
     <div class="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-full overflow-y-auto">
       <div class="p-6 border-b flex justify-between items-center">
         <h3 class="text-xl font-semibold">Catatan untuk: <span id="modalStudentName" class="text-blue-600"></span></h3>
@@ -209,23 +139,15 @@
       <div class="p-6">
         <div id="notesList" class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2"></div>
         <h4 class="font-semibold mb-2">Tambah Catatan Baru</h4>
-        <textarea id="newNoteText" class="w-full p-2 border rounded-md" rows="3"
-          placeholder="Contoh: Terlambat masuk kelas..."></textarea>
-        <button id="saveNoteButton"
-          class="mt-4 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Simpan
-          Catatan</button>
+        <textarea id="newNoteText" class="w-full p-2 border rounded-md" rows="3" placeholder="Contoh: Terlambat masuk kelas..."></textarea>
+        <button id="saveNoteButton" class="mt-4 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Simpan Catatan</button>
       </div>
     </div>
   </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      // --- State ---
-      let currentStudents = [],
-        currentEditingClassId = null,
-        currentStudentIdForNote = null;
-
-      // --- DOM Elements ---
+      let currentStudents = [], currentEditingClassId = null, currentStudentIdForNote = null;
       const classFilter = document.getElementById("classFilter"),
         dateFilter = document.getElementById("dateFilter"),
         searchInput = document.getElementById("searchInput"),
@@ -250,32 +172,37 @@
         saveNoteButton = document.getElementById("saveNoteButton"),
         modalStudentName = document.getElementById("modalStudentName"),
         notesList = document.getElementById("notesList"),
-        newNoteText = document.getElementById("newNoteText");
+        newNoteText = document.getElementById("newNoteText"),
+        loadingOverlay = document.getElementById("loadingOverlay"),
+        loadingMessage = document.getElementById("loadingMessage");
 
       const showToast = (icon, title) => Swal.fire({ toast: true, position: "top-end", showConfirmButton: false, timer: 3000, icon, title, timerProgressBar: true });
+      const showLoading = (message = "Memproses...") => {
+        loadingMessage.textContent = message;
+        loadingOverlay.classList.remove("hidden");
+      };
+      const hideLoading = () => {
+        loadingOverlay.classList.add("hidden");
+      };
 
-      // --- Fungsi Utama Render & Fetch ---
       const renderStudents = (students) => {
         if (!students || students.length === 0) {
           tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Tidak ada data siswa untuk filter ini.</td></tr>`;
           return;
         }
-        tableBody.innerHTML = students
-          .map((s, i) => {
+        tableBody.innerHTML = students.map((s, i) => {
             const noteIndicator = s.has_notes ? '<span class="note-indicator" title="Siswa ini memiliki catatan"></span>' : "";
             return `
-                    <tr data-status="${s.status}" data-student-id="${s.id}" class="hover:bg-gray-50">
-                        <td class="px-6 py-4 text-sm text-gray-500">${i + 1}</td>
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900 flex items-center"><span class="student-name">${s.full_name}</span> ${noteIndicator}</td>
-                        <td class="px-6 py-4"><input type="number" value="${s.grade}" class="w-20 p-1 border rounded-md grade-input" data-id="${s.id}" min="0" max="100"></td>
-                        <td class="px-6 py-4"><select class="p-1 border rounded-md status-select" data-id="${s.id}">${["Hadir", "Izin", "Sakit", "Alpa"]
-                .map((st) => `<option value="${st}" ${s.status === st ? "selected" : ""}>${st}</option>`)
-                .join("")}</select></td>
-                        <td class="px-6 py-4 text-center"><button class="text-white bg-gray-700 px-3 py-2 text-sm rounded-lg font-semibold note-button" data-id="${s.id}" data-name="${s.full_name}">Catatan</button></td>
-                    </tr>`;
-          })
-          .join("");
+              <tr data-status="${s.status}" data-student-id="${s.id}" class="hover:bg-gray-50">
+                <td class="px-6 py-4 text-sm text-gray-500">${i + 1}</td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900 flex items-center"><span class="student-name">${s.full_name}</span> ${noteIndicator}</td>
+                <td class="px-6 py-4"><input type="number" value="${s.grade}" class="w-20 p-1 border rounded-md grade-input" data-id="${s.id}" min="0" max="100"></td>
+                <td class="px-6 py-4"><select class="p-1 border rounded-md status-select" data-id="${s.id}">${["Hadir", "Izin", "Sakit", "Alpa"].map((st) => `<option value="${st}" ${s.status === st ? "selected" : ""}>${st}</option>`).join("")}</select></td>
+                <td class="px-6 py-4 text-center"><button class="text-white bg-gray-700 px-3 py-2 text-sm rounded-lg font-semibold note-button" data-id="${s.id}" data-name="${s.full_name}">Catatan</button></td>
+              </tr>`;
+          }).join("");
       };
+
       const loadStudentsOnFilterChange = async () => {
         const classId = classFilter.value;
         const date = dateFilter.value;
@@ -294,6 +221,7 @@
           tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">${error.message}</td></tr>`;
         }
       };
+
       const loadInitialData = async () => {
         try {
           const response = await fetch("/api/initial-data");
@@ -312,7 +240,6 @@
         }
       };
 
-      // --- Fungsi Modal Catatan ---
       const openNotesModal = async () => {
         notesList.innerHTML = "<p>Memuat catatan...</p>";
         newNoteText.value = "";
@@ -321,18 +248,11 @@
           const response = await fetch(`/api/student/${currentStudentIdForNote}/notes`);
           if (!response.ok) throw new Error("Gagal memuat catatan");
           const notes = await response.json();
-          notesList.innerHTML =
-            notes.length > 0
-              ? notes
-                .map(
-                  (note) => `
-                    <div class="note-item bg-gray-100 p-3 rounded-md flex justify-between items-start">
-                        <div><p class="text-sm text-gray-800">${note.note_text}</p><p class="text-xs text-gray-500 text-left mt-1">${note.formatted_date}</p></div>
-                        <button class="delete-note-btn text-red-400 hover:text-red-600 ml-2 text-lg" data-note-id="${note.id}" title="Hapus catatan ini">&times;</button>
-                    </div>`
-                )
-                .join("")
-              : '<p class="text-sm text-gray-500">Belum ada catatan.</p>';
+          notesList.innerHTML = notes.length > 0 ? notes.map( note => `
+                <div class="note-item bg-gray-100 p-3 rounded-md flex justify-between items-start">
+                  <div><p class="text-sm text-gray-800">${note.note_text}</p><p class="text-xs text-gray-500 text-left mt-1">${note.formatted_date}</p></div>
+                  <button class="delete-note-btn text-red-400 hover:text-red-600 ml-2 text-lg" data-note-id="${note.id}" title="Hapus catatan ini">&times;</button>
+                </div>`).join("") : '<p class="text-sm text-gray-500">Belum ada catatan.</p>';
         } catch (error) {
           notesList.innerHTML = `<p class="text-sm text-red-500">${error.message}</p>`;
         }
@@ -347,42 +267,46 @@
           if (!response.ok) throw new Error("Gagal menyimpan catatan");
           showToast("success", "Catatan berhasil disimpan!");
           await openNotesModal();
-          if (result.hasNotes) {
-            const student = currentStudents.find((s) => s.id == currentStudentIdForNote);
-            if (student) student.has_notes = true;
-            renderStudents(currentStudents);
-          }
+          const student = currentStudents.find((s) => s.id == currentStudentIdForNote);
+          if (student) student.has_notes = result.hasNotes;
+          renderStudents(currentStudents);
         } catch (error) {
           showToast("error", error.message);
         }
       };
 
-      // --- Event Listeners ---
+      const cleanupDailyData = async (date, classId) => {
+        showLoading(`Mereset data tanggal ${date}...`);
+        try {
+          const response = await fetch('/api/cleanup-daily-data', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: date, classId: classId }) });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'Gagal mereset data');
+          showToast('success', result.message);
+          await loadStudentsOnFilterChange();
+        } catch (error) {
+          showToast('error', error.message);
+        } finally {
+          hideLoading();
+        }
+      };
+
       dateFilter.value = new Date().toISOString().split("T")[0];
       loadInitialData();
+
       classFilter.addEventListener("change", loadStudentsOnFilterChange);
-      const loadingOverlay = document.getElementById("loadingOverlay");
-      const loadingMessage = document.getElementById("loadingMessage");
       dateFilter.addEventListener("change", loadStudentsOnFilterChange);
       searchInput.addEventListener("input", () => renderStudents(searchInput.value.toLowerCase() ? currentStudents.filter((s) => s.full_name.toLowerCase().includes(searchInput.value.toLowerCase())) : currentStudents));
-      // GANTI DENGAN BLOK INI
-      // GANTI DENGAN VERSI BARU INI
+      
       downloadExcelButton.addEventListener("click", async () => {
-        const classId = classFilter.value; // Ambil classId
+        const classId = classFilter.value;
         const reportDate = dateFilter.value;
         const reportMonth = reportDate.substring(0, 7);
         const className = classFilter.options[classFilter.selectedIndex].text;
-
-        if (!classId || !reportDate) {
-          return showToast("warning", "Pilih kelas dan tanggal terlebih dahulu");
-        }
-
+        if (!classId || !reportDate) return showToast("warning", "Pilih kelas dan tanggal terlebih dahulu");
         showLoading("Membuat laporan Excel...");
-
         try {
           const response = await fetch(`/api/report/excel?classId=${classId}&month=${reportMonth}`);
           if (!response.ok) throw new Error('Gagal membuat laporan.');
-
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -393,63 +317,31 @@
           a.click();
           window.URL.revokeObjectURL(url);
           a.remove();
-
           hideLoading();
           showToast('success', 'Laporan berhasil diunduh!');
-
           setTimeout(() => {
             Swal.fire({
               title: 'Reset Data Harian?',
               html: `Apakah Anda ingin mereset <strong>semua nilai menjadi 0</strong> serta menghapus data absensi dan jurnal untuk tanggal <strong>${new Date(reportDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}</strong>?`,
-              icon: 'question',
-              showCancelButton: true,
-              confirmButtonColor: '#d33',
-              cancelButtonColor: '#3085d6',
-              confirmButtonText: 'Ya, Reset Data!',
-              cancelButtonText: 'Batal'
+              icon: 'question', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6',
+              confirmButtonText: 'Ya, Reset Data!', cancelButtonText: 'Batal'
             }).then(async (result) => {
               if (result.isConfirmed) {
-                // Kirim classId ke fungsi cleanup
                 await cleanupDailyData(reportDate, classId);
               }
             });
           }, 500);
-
         } catch (error) {
           hideLoading();
           showToast('error', error.message);
         }
       });
 
-      // FUNGSI BARU UNTUK MENGHAPUS DATA (SUDAH DIPERBARUI)
-      const cleanupDailyData = async (date, classId) => { // Terima classId
-        showLoading(`Mereset data tanggal ${date}...`);
-        try {
-          const response = await fetch('/api/cleanup-daily-data', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            // Kirim classId dalam body request
-            body: JSON.stringify({ date: date, classId: classId })
-          });
-
-          const result = await response.json();
-          if (!response.ok) throw new Error(result.error || 'Gagal mereset data');
-
-          showToast('success', result.message);
-
-          // Muat ulang data siswa di tabel untuk melihat perubahannya
-          await loadStudentsOnFilterChange();
-
-        } catch (error) {
-          showToast('error', error.message);
-        } finally {
-          hideLoading();
-        }
-      };
       logoutButton.addEventListener("click", async () => {
         await fetch("/api/logout", { method: "POST" });
         window.location.href = "/";
       });
+
       tableBody.addEventListener("change", async (e) => {
         const target = e.target;
         const id = target.dataset.id;
@@ -457,7 +349,9 @@
         let response;
         try {
           if (target.classList.contains("grade-input")) {
-            response = await fetch(`/api/student/${id}/grade`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ grade: target.value }) });
+            const date = dateFilter.value;
+            if (!date) return showToast("error", "Silakan pilih tanggal terlebih dahulu.");
+            response = await fetch(`/api/student/${id}/grade`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ grade: target.value, date: date }) });
           } else if (target.classList.contains("status-select")) {
             const status = target.value;
             response = await fetch(`/api/student/${id}/status`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date: dateFilter.value, status: status }) });
@@ -469,6 +363,7 @@
           showToast("error", error.message);
         }
       });
+
       tableBody.addEventListener("click", (e) => {
         const button = e.target.closest("button.note-button");
         if (button) {
@@ -479,28 +374,12 @@
       });
       closeNotesModalButton.addEventListener("click", closeNotesModal);
       saveNoteButton.addEventListener("click", saveNote);
-      // --> TAMBAHKAN DUA FUNGSI BARU INI
-      const showLoading = (message = "Memproses...") => {
-        loadingMessage.textContent = message;
-        loadingOverlay.classList.remove("hidden");
-      };
-
-      const hideLoading = () => {
-        loadingOverlay.classList.add("hidden");
-      };
+      
       notesList.addEventListener("click", async (e) => {
         const deleteButton = e.target.closest(".delete-note-btn");
         if (!deleteButton) return;
         const noteId = deleteButton.dataset.noteId;
-        const result = await Swal.fire({
-          title: "Hapus Catatan Ini?",
-          text: "Tindakan ini tidak dapat dibatalkan.",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#d33",
-          confirmButtonText: "Ya, hapus!",
-          cancelButtonText: "Batal",
-        });
+        const result = await Swal.fire({ title: "Hapus Catatan Ini?", text: "Tindakan ini tidak dapat dibatalkan.", icon: "warning", showCancelButton: true, confirmButtonColor: "#d33", confirmButtonText: "Ya, hapus!", cancelButtonText: "Batal" });
         if (result.isConfirmed) {
           try {
             const response = await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
@@ -518,19 +397,12 @@
         }
       });
 
-      // --- Event listeners untuk modal manajemen data ---
       const loadClassesForManagement = async () => {
         try {
           const response = await fetch("/api/classes");
           if (!response.ok) throw new Error("Gagal memuat data kelas");
           const classes = await response.json();
-          classList.innerHTML =
-            classes
-              .map(
-                (c) =>
-                  `<div class="flex justify-between items-center bg-gray-50 p-2 rounded-md border"><div><strong class="text-gray-800">${c.class_name}</strong><p class="text-xs text-gray-500">${c.homeroom_teacher}</p></div><div class="flex items-center gap-2"><button class="edit-class-btn text-yellow-500 hover:text-yellow-700" data-id="${c.id}" data-name="${c.class_name}" data-teacher="${c.homeroom_teacher}"><i class="fas fa-pencil-alt"></i></button><button class="delete-class-btn text-red-500 hover:text-red-700" data-id="${c.id}"><i class="fas fa-trash"></i></button></div></div>`
-              )
-              .join("") || '<p class="text-sm text-gray-500">Belum ada kelas.</p>';
+          classList.innerHTML = classes.map( c => `<div class="flex justify-between items-center bg-gray-50 p-2 rounded-md border"><div><strong class="text-gray-800">${c.class_name}</strong><p class="text-xs text-gray-500">${c.homeroom_teacher}</p></div><div class="flex items-center gap-2"><button class="edit-class-btn text-yellow-500 hover:text-yellow-700" data-id="${c.id}" data-name="${c.class_name}" data-teacher="${c.homeroom_teacher}"><i class="fas fa-pencil-alt"></i></button><button class="delete-class-btn text-red-500 hover:text-red-700" data-id="${c.id}"><i class="fas fa-trash"></i></button></div></div>`).join("") || '<p class="text-sm text-gray-500">Belum ada kelas.</p>';
           classSelectForStudents.innerHTML = classes.map((c) => `<option value="${c.id}">${c.class_name}</option>`).join("");
         } catch (error) {
           classList.innerHTML = `<p class="text-red-500">${error.message}</p>`;
@@ -559,10 +431,7 @@
         const homeroomTeacher = newHomeroomTeacher.value;
         const url = currentEditingClassId ? `/api/classes/${currentEditingClassId}` : "/api/classes";
         const method = currentEditingClassId ? "PUT" : "POST";
-
-        // --> BARIS BARU
         showLoading(currentEditingClassId ? "Memperbarui kelas..." : "Menyimpan kelas...");
-
         try {
           const response = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ className, homeroomTeacher }) });
           const result = await response.json();
@@ -572,7 +441,6 @@
         } catch (error) {
           showToast("error", error.message);
         } finally {
-          // --> BARIS BARU
           hideLoading();
         }
       });
@@ -592,13 +460,8 @@
           cancelEditButton.classList.remove("hidden");
         }
         if (button.classList.contains('delete-class-btn')) {
-          const result = await Swal.fire({
-            title: 'Anda yakin?', text: "Menghapus kelas akan menghapus semua siswa di dalamnya!", icon: 'warning',
-            showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, hapus!', cancelButtonText: 'Batal'
-          });
+          const result = await Swal.fire({ title: 'Anda yakin?', text: "Menghapus kelas akan menghapus semua siswa di dalamnya!", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonColor: '#3085d6', confirmButtonText: 'Ya, hapus!', cancelButtonText: 'Batal' });
           if (result.isConfirmed) {
-            // --> BARIS BARU
             showLoading('Menghapus kelas...');
             try {
               const response = await fetch(`/api/classes/${classId}`, { method: 'DELETE' });
@@ -608,7 +471,6 @@
             } catch (error) {
               showToast('error', error.message);
             } finally {
-              // --> BARIS BARU
               hideLoading();
             }
           }
@@ -618,13 +480,9 @@
         const classId = classSelectForStudents.value;
         const textData = bulkStudentInput.value.trim();
         if (!classId || !textData) return showToast('warning', 'Pilih kelas dan paste data siswa!');
-
         const students = textData.split('\n').map(line => line.split('\t')).filter(parts => parts.length >= 2 && parts[0].trim() !== '').map(parts => ({ nipd: parts[0].trim(), name: parts[1].trim(), gender: (parts[2] || 'L').trim().toUpperCase() }));
         if (students.length === 0) return showToast('error', 'Format data tidak sesuai.');
-
-        // --> BARIS BARU
         showLoading('Menyimpan data siswa...');
-
         try {
           const response = await fetch('/api/students/bulk', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ classId, students }) });
           const result = await response.json();
@@ -635,12 +493,10 @@
         } catch (error) {
           showToast('error', error.message);
         } finally {
-          // --> BARIS BARU
           hideLoading();
         }
       });
     });
   </script>
 </body>
-
 </html>

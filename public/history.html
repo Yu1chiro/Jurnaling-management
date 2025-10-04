@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <div class="min-h-screen">
+        <header class="bg-white shadow-md sticky top-0 z-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">Riwayat Data & Laporan</h1>
+                <a href="/dashboard"
+                    class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+                    &larr; Kembali ke Dashboard
+                </a>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div id="history-container" class="space-y-8">
+                </div>
+        </main>
+    </div>
+
+    <div id="loadingOverlay"
+        class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg p-8 flex items-center gap-4 shadow-xl">
+            <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+            </svg>
+            <span id="loadingMessage" class="text-lg font-medium text-gray-700">Memproses...</span>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const historyContainer = document.getElementById('history-container');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingMessage = document.getElementById('loadingMessage');
+
+    const { jsPDF } = window.jspdf;
+    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+
+    const showLoading = (message = 'Memproses...') => {
+        loadingMessage.textContent = message;
+        loadingOverlay.classList.remove('hidden');
+    };
+
+    const hideLoading = () => {
+        loadingOverlay.classList.add('hidden');
+    };
+
+    const formatMonth = (monthString) => { // format YYYY-MM
+        const [year, month] = monthString.split('-');
+        const date = new Date(year, month - 1);
+        return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    };
+
+    const renderHistory = (data) => {
+        if (!data || data.length === 0) {
+            historyContainer.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-lg text-center">
+                    <h2 class="text-xl font-semibold text-gray-700">Belum Ada Riwayat Data</h2>
+                    <p class="text-gray-500 mt-2">Silakan mulai input data di dashboard untuk melihat riwayat di sini.</p>
+                </div>`;
+            return;
+        }
+
+        historyContainer.innerHTML = data.map(classData => `
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="p-5 bg-blue-50 border-b border-blue-200">
+                    <h2 class="text-xl font-bold text-blue-800">${classData.class_name}</h2>
+                </div>
+                <ul class="divide-y divide-gray-200">
+                    ${classData.months.map(monthData => `
+                        <li class="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div class="font-semibold text-gray-800 text-lg">
+                                ${formatMonth(monthData.month)}
+                            </div>
+                            <div class="flex items-center gap-3 flex-shrink-0">
+                                <button 
+                                    class="download-excel-btn text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm ${monthData.has_grades ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}" 
+                                    data-class-id="${classData.class_id}" 
+                                    data-class-name="${classData.class_name}" 
+                                    data-month="${monthData.month}"
+                                    ${!monthData.has_grades ? 'disabled' : ''}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3 3a1 1 0 00-1 1v2a1 1 0 001 1h2a1 1 0 001-1V9a1 1 0 00-1-1H5zm5 0a1 1 0 00-1 1v2a1 1 0 001 1h2a1 1 0 001-1V9a1 1 0 00-1-1h-2z"/></svg>
+                                    Nilai (Excel)
+                                </button>
+                                <button 
+                                    class="download-pdf-btn text-white font-bold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 text-sm ${monthData.has_journals ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 cursor-not-allowed'}"
+                                    data-class-id="${classData.class_id}" 
+                                    data-class-name="${classData.class_name}" 
+                                    data-month="${monthData.month}"
+                                    ${!monthData.has_journals ? 'disabled' : ''}>
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+                                    Jurnal (PDF)
+                                </button>
+                            </div>
+                        </li>
+                    `).join('')}
+                </ul>
+            </div>
+        `).join('');
+    };
+
+    const fetchHistoryData = async () => {
+        showLoading('Memuat riwayat data...');
+        try {
+            const response = await fetch('/api/history-summary');
+            if (!response.ok) throw new Error('Gagal mengambil data riwayat.');
+            const data = await response.json();
+            renderHistory(data);
+        } catch (error) {
+            historyContainer.innerHTML = `<div class="bg-red-100 text-red-700 p-4 rounded-lg">${error.message}</div>`;
+        } finally {
+            hideLoading();
+        }
+    };
+
+    historyContainer.addEventListener('click', async (e) => {
+        const excelBtn = e.target.closest('.download-excel-btn');
+        const pdfBtn = e.target.closest('.download-pdf-btn');
+
+        if (excelBtn) {
+            const { classId, className, month } = excelBtn.dataset;
+            showLoading(`Membuat laporan Excel untuk ${className}...`);
+            try {
+                const response = await fetch(`/api/report/excel?classId=${classId}&month=${month}`);
+                if (!response.ok) throw new Error('Gagal membuat laporan Excel.');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `laporan_nilai_${className}_${month}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+                Toast.fire({ icon: 'success', title: 'Laporan Excel berhasil diunduh!' });
+            } catch (error) {
+                Toast.fire({ icon: 'error', title: error.message });
+            } finally {
+                hideLoading();
+            }
+        }
+
+        if (pdfBtn) {
+            const { classId, className, month } = pdfBtn.dataset;
+            showLoading(`Membuat laporan PDF untuk ${className}...`);
+            try {
+                const response = await fetch(`/api/report/journals-monthly?classId=${classId}&month=${month}`);
+                const journals = await response.json();
+                if (!response.ok) throw new Error(journals.error || 'Gagal mengambil data jurnal.');
+                if (journals.length === 0) {
+                    Toast.fire({ icon: 'warning', title: 'Tidak ada data jurnal untuk bulan ini.' });
+                    return;
+                }
+                
+                const doc = new jsPDF();
+                doc.setFontSize(16); doc.text(`Jurnal Bulanan - Kelas ${className}`, 14, 15);
+                doc.setFontSize(12); doc.text(`Bulan: ${formatMonth(month)}`, 14, 22);
+
+                const tableColumn = ["Tanggal", "Capaian Pembelajaran", "Elemen", "Agenda", "Metode", "Status"];
+                const tableRows = journals.map(j => [
+                    new Date(j.journal_date + 'T00:00:00').toLocaleDateString('id-ID'),
+                    j.learning_achievement,
+                    j.material_element,
+                    j.agenda,
+                    j.method,
+                    j.is_active ? 'Selesai' : 'Belum Selesai'
+                ]);
+
+                doc.autoTable({
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 30,
+                    theme: 'grid',
+                    headStyles: { fillColor: [22, 160, 133] },
+                });
+                doc.save(`laporan_jurnal_${className}_${month}.pdf`);
+                Toast.fire({ icon: 'success', title: 'Laporan PDF berhasil diunduh!' });
+
+            } catch (error) {
+                Toast.fire({ icon: 'error', title: error.message });
+            } finally {
+                hideLoading();
+            }
+        }
+    });
+
+    // Mulai aplikasi
+    fetchHistoryData();
+});
+</script>
+</body>
+</html>
