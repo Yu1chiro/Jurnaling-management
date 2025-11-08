@@ -41,7 +41,6 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-gray-800">Dashboard Manajemen Siswa</h1>
         <div>
-          <button id="manageDataButton" class="bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 transition mr-4"><i class="fas fa-database mr-2"></i>Kelola Data</button>
           <button id="logoutButton" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button>
         </div>
       </div>
@@ -64,6 +63,8 @@
           <div class="lg:col-span-2 grid grid-cols-3 gap-3">
             <button onclick="window.location.href='/jurnal-kelas'" class="bg-blue-600 py-3 px-3 hover:bg-blue-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">Jurnal</button>
             <button onclick="window.location.href='/history'" class="bg-purple-600 py-3 px-3 hover:bg-purple-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">Riwayat</button>
+            <a href="https://drive.google.com/drive/folders/1yUwd0ES_PaQ41ztbCOQvjMTJLrJsFC1F?usp=sharing" target="_blank" class="bg-blue-600 py-3 px-3 hover:bg-blue-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2">Modul Ajar</a>
+            <button  id="manageDataButton"  class="bg-gray-600 text-white font-bold py-3 px-3 rounded-lg hover:bg-gray-700 transition flex items-center justify-center gap-2 text-sm">Database siswa</button>
             <button id="downloadExcel" class="bg-green-600 text-white font-bold py-3 px-3 rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 text-sm">Laporan</button>
           </div>
         </div>
