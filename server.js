@@ -43,7 +43,16 @@ const initializeDatabase = async () => {
       CREATE TABLE IF NOT EXISTS class_journals ( id SERIAL PRIMARY KEY, class_id INT REFERENCES classes(id) ON DELETE CASCADE NOT NULL, journal_date DATE NOT NULL DEFAULT CURRENT_DATE, learning_achievement TEXT, material_element TEXT, agenda TEXT, method TEXT, is_active BOOLEAN DEFAULT true, created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW() );
       CREATE TABLE IF NOT EXISTS student_grades ( id SERIAL PRIMARY KEY, student_id INT REFERENCES students(id) ON DELETE CASCADE, grade_date DATE NOT NULL, grade INT DEFAULT 0, UNIQUE (student_id, grade_date) );
     `);
-
+      await client.query(`
+      CREATE TABLE IF NOT EXISTS behavior_notes (
+        id SERIAL PRIMARY KEY,
+        student_id INT REFERENCES students(id) ON DELETE CASCADE NOT NULL,
+        class_id INT REFERENCES classes(id) ON DELETE CASCADE NOT NULL,
+        note_date TIMESTAMPTZ NOT NULL,
+        kategori VARCHAR(20) NOT NULL,
+        note_text TEXT
+      );
+    `);
     const columnCheck = await client.query(`
       SELECT 1 FROM information_schema.columns 
       WHERE table_name='students' AND column_name='grade';
@@ -71,6 +80,7 @@ const initializeDatabase = async () => {
 };
 
 app.get("/", (req, res) => res.redirect("/login.html"));
+app.get("/catatan-siswa", authMiddleware, (req, res) => res.sendFile(path.join(__dirname, "public", "catatan-siswa.html")));
 app.get("/dashboard", authMiddleware, (req, res) => res.sendFile(path.join(__dirname, "public", "dashboard.html")));
 app.get("/jurnal-kelas", authMiddleware, (req, res) => res.sendFile(path.join(__dirname, "public", "jurnal-kelas.html")));
 app.get("/history", authMiddleware, (req, res) => res.sendFile(path.join(__dirname, "public", "history.html")));
@@ -420,6 +430,163 @@ app.get("/api/report/journals-monthly", authMiddleware, async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: "Gagal mengambil data jurnal bulanan" });
     }
+});
+// GET (Paginated) - Mendapatkan semua catatan dengan pagination
+app.get("/api/behavior-notes", authMiddleware, async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  try {
+    const notesQuery = `
+      SELECT 
+        b.id, b.kategori, b.note_text,
+        s.id as student_id, s.full_name, 
+        c.id as class_id, c.class_name,
+        TO_CHAR(b.note_date, 'YYYY-MM-DD"T"HH24:MI') as note_date_iso,
+        TO_CHAR(b.note_date, 'DD Mon YYYY, HH24:MI') as note_date_formatted
+      FROM behavior_notes b
+      JOIN students s ON b.student_id = s.id
+      JOIN classes c ON b.class_id = c.id
+      ORDER BY b.note_date DESC
+      LIMIT $1 OFFSET $2;
+    `;
+    
+    const totalQuery = "SELECT COUNT(*) FROM behavior_notes;";
+
+    const [notesResult, totalResult] = await Promise.all([
+      pool.query(notesQuery, [limit, offset]),
+      pool.query(totalQuery)
+    ]);
+
+    const totalNotes = parseInt(totalResult.rows[0].count);
+    const totalPages = Math.ceil(totalNotes / limit);
+
+    res.json({
+      notes: notesResult.rows,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalNotes: totalNotes,
+        limit: limit
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching behavior notes:", error);
+    res.status(500).json({ error: "Gagal mengambil data catatan" });
+  }
+});
+
+// GET - Statistik untuk chart
+app.get("/api/behavior-notes/stats", authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT kategori, COUNT(*) as count
+      FROM behavior_notes
+      GROUP BY kategori
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching stats:", error);
+    res.status(500).json({ error: "Gagal mengambil data statistik" });
+  }
+});
+
+// POST - Membuat catatan baru
+app.post("/api/behavior-notes", authMiddleware, async (req, res) => {
+  const { student_id, note_date, kategori, note_text } = req.body;
+  
+  if (!student_id || !note_date || !kategori) {
+    return res.status(400).json({ error: "Siswa, tanggal, dan kategori harus diisi" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    
+    // 1. Dapatkan class_id dari student
+    const studentResult = await client.query("SELECT class_id FROM students WHERE id = $1", [student_id]);
+    if (studentResult.rows.length === 0) {
+      throw new Error("Siswa tidak ditemukan");
+    }
+    const { class_id } = studentResult.rows[0];
+
+    // 2. Masukkan catatan
+    const result = await client.query(
+      `INSERT INTO behavior_notes (student_id, class_id, note_date, kategori, note_text)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [student_id, class_id, note_date, kategori, note_text]
+    );
+    
+    await client.query("COMMIT");
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error creating behavior note:", error);
+    res.status(500).json({ error: "Gagal menyimpan catatan" });
+  } finally {
+    client.release();
+  }
+});
+
+// PUT - Memperbarui catatan
+app.put("/api/behavior-notes/:id", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { student_id, note_date, kategori, note_text } = req.body;
+
+  if (!student_id || !note_date || !kategori) {
+    return res.status(400).json({ error: "Siswa, tanggal, dan kategori harus diisi" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // 1. Dapatkan class_id dari student (jika student berubah)
+    const studentResult = await client.query("SELECT class_id FROM students WHERE id = $1", [student_id]);
+    if (studentResult.rows.length === 0) {
+      throw new Error("Siswa tidak ditemukan");
+    }
+    const { class_id } = studentResult.rows[0];
+
+    // 2. Update catatan
+    const result = await client.query(
+      `UPDATE behavior_notes
+       SET student_id = $1, class_id = $2, note_date = $3, kategori = $4, note_text = $5
+       WHERE id = $6
+       RETURNING *`,
+      [student_id, class_id, note_date, kategori, note_text, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Catatan tidak ditemukan" });
+    }
+
+    await client.query("COMMIT");
+    res.json(result.rows[0]);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error updating behavior note:", error);
+    res.status(500).json({ error: "Gagal memperbarui catatan" });
+  } finally {
+    client.release();
+  }
+});
+
+// DELETE - Menghapus catatan
+app.delete("/api/behavior-notes/:id", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query("DELETE FROM behavior_notes WHERE id = $1", [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Catatan tidak ditemukan" });
+    }
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting behavior note:", error);
+    res.status(500).json({ error: "Gagal menghapus catatan" });
+  }
 });
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

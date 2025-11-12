@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-gray-50">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catatan Siswa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <style>
+    .view-container.hidden {
+      display: none;
+    }
+    .form-input-with-icon {
+      @apply block w-full rounded-lg border-gray-300 bg-gray-50 pl-10 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm;
+    }
+    .form-icon {
+      @apply absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none;
+    }
+    .form-icon-textarea {
+      @apply absolute top-0 left-0 pt-3 pl-3 pointer-events-none;
+    }
+  </style>
+</head>
+<body class="h-full">
+  <div class="min-h-full">
+    <nav class="bg-gray-800 hidden">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 items-center justify-between">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <span class="text-white font-bold">Jurnal Kelas</span>
+            </div>
+            <div class="hidden md:block">
+              <div class="ml-10 flex items-baseline space-x-4">
+                <a href="/dashboard" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Dashboard</a>
+                <a href="/jurnal-kelas" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">Jurnal</a>
+                <a href="/history" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">History</a>
+                <a href="/catatan-siswa" class="bg-gray-900 text-white rounded-md px-3 py-2 text-sm font-medium" aria-current="page">Catatan Siswa</a>
+              </div>
+            </div>
+          </div>
+          <div class="hidden md:block">
+            <button id="logout-button" type="button" class="text-gray-300 hover:bg-gray-700 hover:text-white rounded-md px-3 py-2 text-sm font-medium">
+              Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <header class="bg-white shadow-sm border-b border-gray-200">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
+            <div class="lg:col-span-2">
+              <h1 class="text-2xl font-bold text-gray-900">Catatan Siswa</h1>
+              <p class="mt-1 text-sm text-gray-500">Kelola catatan perilaku siswa dengan mudah</p>
+            </div>
+            <div class="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-3">
+              <button onclick="window.location.href='/jurnal-kelas'" class="bg-indigo-600 py-3 px-3 hover:bg-indigo-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Jurnal
+              </button>
+              <button onclick="window.location.href='/history'" class="bg-purple-600 py-3 px-3 hover:bg-purple-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Riwayat
+              </button>
+              <button onclick="window.location.href='/catatan-siswa'" class="bg-blue-600 py-3 px-3 hover:bg-blue-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                Catatan Siswa
+              </button>
+              <a href="https://drive.google.com/drive/folders/1yUwd0ES_PaQ41ztbCOQvjMTJLrJsFC1F?usp=sharing" target="_blank" class="bg-green-600 py-3 px-3 hover:bg-green-700 rounded-lg font-semibold text-white text-sm flex items-center justify-center gap-2 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Modul Ajar
+              </a>
+              <button onclick="window.location.href='/dashboard'" class="bg-gray-600 text-white font-bold py-3 px-3 rounded-lg hover:bg-gray-700 transition flex items-center justify-center gap-2 text-sm">
+                
+                Dashboard
+              </button>
+            
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="sm:hidden">
+            <label for="tabs" class="sr-only">Pilih View</label>
+            <select id="tabs" name="tabs" class="block w-full pl-12 pr-10 py-3.5 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-400 appearance-none bg-white">
+              <option value="table" selected>Tabel Catatan</option>
+              <option value="form">Formulir Catatan</option>
+              <option value="stats">Statistik</option>
+            </select>
+          </div>
+          <div class="hidden sm:block">
+            <div class="border-b border-gray-200">
+              <nav id="view-switcher-tabs" class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button id="nav-table" data-view="table" class="view-tab border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                  Tabel Catatan
+                </button>
+                <button id="nav-form" data-view="form" class="view-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                  Formulir Catatan
+                </button>
+                <button id="nav-stats" data-view="stats" class="view-tab border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                  Statistik
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
+        
+        <div id="view-table" class="view-container">
+          <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+              <h3 class="text-lg font-medium leading-6 text-gray-900">Daftar Catatan</h3>
+              <p class="mt-1 text-sm text-gray-500">Menampilkan semua catatan perilaku siswa terurut berdasarkan tanggal terbaru.</p>
+            </div>
+            
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Siswa</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Catatan</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="notes-tbody" class="bg-white divide-y divide-gray-200">
+                  <tr>
+                      <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                        <div class="flex justify-center items-center">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Memuat data...
+                        </div>
+                      </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <nav id="pagination-controls" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 sm:rounded-b-lg" aria-label="Pagination">
+              <div class="hidden sm:block">
+                <p class="text-sm text-gray-700" id="pagination-info">
+                </p>
+              </div>
+              <div class="flex-1 flex justify-between sm:justify-end">
+                <button id="prev-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  Sebelumnya
+                </button>
+                <button id="next-page" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  Selanjutnya
+                </button>
+              </div>
+            </nav>
+          </div>
+        </div>
+
+        <div id="view-form" class="view-container hidden">
+          <div class="max-w-3xl mx-auto px-4 py-8">
+            <div class="bg-white shadow-2xl rounded-2xl overflow-hidden border border-gray-100">
+              <form id="note-form" class="relative">
+                <input type="hidden" id="note-id" />
+                
+                <!-- Header dengan gradient -->
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-8 sm:px-10">
+                  <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                      <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div>
+                      <h2 class="text-2xl font-bold text-white" id="form-title">
+                        Formulir Catatan
+                      </h2>
+                      <p class="mt-1 text-sm text-indigo-100" id="form-subtitle">
+                        Isi detail catatan perilaku siswa di bawah ini
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Form Fields -->
+                <div class="px-6 py-8 sm:px-10">
+                  <div class="space-y-6">
+                    
+                    <!-- Tanggal & Waktu -->
+                    <div class="group">
+                      <label for="note-date" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Tanggal & Waktu
+                      </label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <svg class="h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <input 
+                          type="datetime-local" 
+                          id="note-date" 
+                          name="note-date" 
+                          required 
+                          class="block w-full pl-12 pr-4 py-3.5 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-400"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Kelas -->
+                    <div class="group">
+                      <label for="class-select" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Kelas
+                      </label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <svg class="h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                        </div>
+                        <select 
+                          id="class-select" 
+                          name="class-select" 
+                          required 
+                          class="block w-full pl-12 pr-10 py-3.5 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-400 appearance-none bg-white"
+                        >
+                          <option value="">Pilih Kelas</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                          <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Nama Siswa -->
+                    <div class="group">
+                      <label for="student-select" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Nama Siswa
+                      </label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <svg class="h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        <select 
+                          id="student-select" 
+                          name="student-select" 
+                          required 
+                          disabled 
+                          class="block w-full pl-12 pr-10 py-3.5 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-400 appearance-none bg-white disabled:bg-gray-50 disabled:text-gray-500"
+                        >
+                          <option value="">Pilih Siswa</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                          <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Kategori -->
+                    <div class="group">
+                      <label for="kategori-select" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Kategori
+                      </label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <svg class="h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                          </svg>
+                        </div>
+                        <select 
+                          id="kategori-select" 
+                          name="kategori-select" 
+                          required 
+                          class="block w-full pl-12 pr-10 py-3.5 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-400 appearance-none bg-white"
+                        >
+                          <option value="aktif">✨ Aktif</option>
+                          <option value="bolos">⚠️ Bolos</option>
+                          <option value="nakal">🚫 Nakal</option>
+                          <option value="lainnya">📝 Lainnya</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                          <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Catatan -->
+                    <div class="group">
+                      <label for="note-text" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Catatan
+                      </label>
+                      <div class="relative">
+                        <div class="absolute top-4 left-0 pl-4 pointer-events-none">
+                          <svg class="h-5 w-5 text-gray-400 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </div>
+                        <textarea 
+                          id="note-text" 
+                          name="note-text" 
+                          rows="4" 
+                          class="block w-full pl-12 pr-4 py-3.5 text-gray-900 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-indigo-400 resize-none" 
+                          placeholder="Deskripsikan perilaku atau kejadian secara detail..."
+                        ></textarea>
+                      </div>
+                      <p class="mt-2 text-xs text-gray-500">
+                        Opsional - tambahkan detail tambahan jika diperlukan
+                      </p>
+                    </div>
+                    
+                  </div>
+                </div>
+                
+                <!-- Footer Actions -->
+                <div class="px-6 py-6 bg-gradient-to-r from-gray-50 to-gray-100 sm:px-10 flex items-center justify-between border-t border-gray-200">
+                  <button 
+                    type="button" 
+                    id="cancel-edit" 
+                    class="inline-flex items-center px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-sm"
+                  >
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Batal
+                  </button>
+                  <button 
+                    type="submit" 
+                    class="inline-flex items-center px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Simpan Catatan
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div id="view-stats" class="view-container hidden">
+          <div class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+              <h2 class="text-lg font-medium leading-6 text-gray-900">Statistik Kategori</h2>
+              <p class="mt-1 text-sm text-gray-500">Ringkasan total catatan berdasarkan kategori.</p>
+            </div>
+            <div class="p-4 sm:p-6">
+              <div id="stats-chart"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // JavaScript code remains exactly the same as provided
+    document.addEventListener("DOMContentLoaded", () => {
+      const noteForm = document.getElementById("note-form");
+      const formTitle = document.getElementById("form-title");
+      const noteIdInput = document.getElementById("note-id");
+      const noteDateInput = document.getElementById("note-date");
+      const classSelect = document.getElementById("class-select");
+      const studentSelect = document.getElementById("student-select");
+      const kategoriSelect = document.getElementById("kategori-select");
+      const noteTextInput = document.getElementById("note-text");
+      const cancelEditButton = document.getElementById("cancel-edit");
+      
+      const notesTbody = document.getElementById("notes-tbody");
+      const prevPageButton = document.getElementById("prev-page");
+      const nextPageButton = document.getElementById("next-page");
+      const paginationInfo = document.getElementById("pagination-info");
+      const logoutButton = document.getElementById("logout-button");
+
+      const viewTabs = document.querySelectorAll(".view-tab");
+      const views = {
+        table: document.getElementById('view-table'),
+        form: document.getElementById('view-form'),
+        stats: document.getElementById('view-stats')
+      };
+      const mobileTabSelect = document.getElementById('tabs');
+      const activeTabClasses = 'border-indigo-500 text-indigo-600';
+      const inactiveTabClasses = 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300';
+
+      const API_URL = "/api/behavior-notes";
+      let allStudents = {};
+      let allNotesData = {};
+      let currentPage = 1;
+      let totalPages = 1;
+      let isEditing = false;
+      let chart;
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener("mouseenter", Swal.stopTimer);
+          toast.addEventListener("mouseleave", Swal.resumeTimer);
+        },
+      });
+
+      const switchView = (viewName) => {
+        Object.values(views).forEach(view => view.classList.add('hidden'));
+        if (views[viewName]) {
+          views[viewName].classList.remove('hidden');
+        }
+
+        viewTabs.forEach(tab => {
+          tab.className = tab.className.replace(activeTabClasses, inactiveTabClasses).replace(inactiveTabClasses, inactiveTabClasses);
+          if (tab.dataset.view === viewName) {
+            tab.className = tab.className + ' ' + activeTabClasses;
+          } else {
+            tab.className = tab.className + ' ' + inactiveTabClasses;
+          }
+        });
+
+        mobileTabSelect.value = viewName;
+        
+        if (viewName === 'form' && !isEditing) {
+          resetForm();
+        }
+      };
+
+      const initializeChart = () => {
+        const options = {
+          series: [],
+          chart: { type: "donut", height: 350, fontFamily: 'inherit' },
+          labels: [],
+          responsive: [{
+            breakpoint: 480,
+            options: { chart: { width: 200 }, legend: { position: "bottom" } },
+          }],
+          noData: { text: 'Belum ada data statistik' }
+        };
+        chart = new ApexCharts(document.querySelector("#stats-chart"), options);
+        chart.render();
+      };
+
+      const loadChartData = async () => {
+        try {
+          const response = await fetch(`${API_URL}/stats`);
+          if (!response.ok) throw new Error("Gagal mengambil statistik");
+          
+          const stats = await response.json();
+          const labels = stats.map(s => s.kategori);
+          const series = stats.map(s => parseInt(s.count));
+
+          chart.updateOptions({ labels: labels });
+          chart.updateSeries(series);
+
+        } catch (error) {
+          console.error(error);
+          Toast.fire({ icon: "error", title: error.message });
+        }
+      };
+      
+      const fetchNotes = async (page = 1) => {
+        try {
+          notesTbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="px-6 py-10 text-center text-gray-500">
+                <div class="flex justify-center items-center">
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Memuat data...
+                </div>
+              </td>
+            </tr>`;
+            
+          const response = await fetch(`${API_URL}?page=${page}&limit=10`);
+          if (!response.ok) throw new Error("Gagal mengambil catatan");
+
+          const data = await response.json();
+          allNotesData[page] = data.notes;
+          renderTable(data.notes);
+          renderPagination(data.pagination);
+          
+        } catch (error) {
+          console.error(error);
+          notesTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-500">Error: ${error.message}</td></tr>`;
+        }
+      };
+
+      const fetchClasses = async () => {
+        try {
+          const response = await fetch("/api/classes");
+          if (!response.ok) throw new Error("Gagal mengambil data kelas");
+          const classes = await response.json();
+          classSelect.innerHTML = '<option value="">Pilih Kelas</option>';
+          classes.forEach((c) => {
+            const option = document.createElement("option");
+            option.value = c.id;
+            option.textContent = c.class_name;
+            classSelect.appendChild(option);
+          });
+        } catch (error) {
+          console.error(error);
+          Toast.fire({ icon: "error", title: error.message });
+        }
+      };
+
+      const fetchStudents = async (classId) => {
+        if (!classId) {
+          studentSelect.innerHTML = '<option value="">Pilih Siswa</option>';
+          studentSelect.disabled = true;
+          return;
+        }
+
+        if (allStudents[classId]) {
+          populateStudentSelect(allStudents[classId]);
+          return;
+        }
+
+        studentSelect.disabled = true;
+        studentSelect.innerHTML = '<option value="">Memuat siswa...</option>';
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          const response = await fetch(`/api/students?classId=${classId}&date=${today}`);
+          if (!response.ok) throw new Error("Gagal mengambil data siswa");
+          
+          const students = await response.json();
+          allStudents[classId] = students;
+          populateStudentSelect(students);
+
+        } catch (error) {
+          console.error(error);
+          Toast.fire({ icon: "error", title: error.message });
+          studentSelect.innerHTML = '<option value="">Gagal memuat</option>';
+        }
+      };
+
+      const populateStudentSelect = (students) => {
+          studentSelect.innerHTML = '<option value="">Pilih Siswa</option>';
+          students.forEach((s) => {
+            const option = document.createElement("option");
+            option.value = s.id;
+            option.textContent = s.full_name;
+            studentSelect.appendChild(option);
+          });
+          studentSelect.disabled = false;
+      };
+
+      const renderTable = (notes) => {
+        if (notes.length === 0) {
+          notesTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-500">Belum ada data catatan</td></tr>`;
+          return;
+        }
+
+        notesTbody.innerHTML = "";
+        notes.forEach((note) => {
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-gray-50";
+          
+          const kategoriColor = note.kategori === 'nakal' || note.kategori === 'bolos' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+          
+          tr.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm font-medium text-gray-900">${note.full_name}</div>
+              <div class="text-sm text-gray-500">${note.class_name}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">${note.note_date_formatted}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${kategoriColor}">
+                ${note.kategori}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-sm text-gray-900 truncate max-w-xs" title="${note.note_text || ''}">${note.note_text || '-'}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <div class="flex items-center justify-end space-x-2">
+                <button data-id="${note.id}" data-page="${currentPage}" class="edit-btn text-gray-400 hover:text-indigo-600 p-1.5 rounded-full hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                  <span class="sr-only">Edit</span>
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-9.9 9.9-3.536 1.06-1.06-3.535 9.9-9.9zM11.75 5.5l2.75 2.75-9.9 9.9-2.75-2.75 9.9-9.9z" />
+                  </svg>
+                </button>
+                
+                <button data-id="${note.id}" class="delete-btn text-gray-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  <span class="sr-only">Delete</span>
+                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-1V3a1 1 0 00-1-1H6zM8 6v9h1V6H8zm3 0v9h1V6h-1z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          `;
+          notesTbody.appendChild(tr);
+        });
+      };
+
+      const renderPagination = (pagination) => {
+        currentPage = pagination.currentPage;
+        totalPages = pagination.totalPages;
+        const start = (currentPage - 1) * pagination.limit + 1;
+        const end = Math.min(start + pagination.limit - 1, pagination.totalNotes);
+        paginationInfo.textContent = `Menampilkan ${start} - ${end} dari ${pagination.totalNotes} hasil`;
+        prevPageButton.disabled = currentPage === 1;
+        nextPageButton.disabled = currentPage === totalPages;
+      };
+
+      const resetForm = () => {
+        noteForm.reset();
+        noteIdInput.value = "";
+        studentSelect.innerHTML = '<option value="">Pilih Siswa</option>';
+        studentSelect.disabled = true;
+        isEditing = false;
+        formTitle.textContent = "Formulir Catatan";
+        document.getElementById('form-subtitle').textContent = "Isi detail catatan perilaku siswa di bawah ini.";
+      };
+
+      const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        
+        const data = {
+          student_id: studentSelect.value,
+          note_date: noteDateInput.value,
+          kategori: kategoriSelect.value,
+          note_text: noteTextInput.value,
+        };
+
+        const method = isEditing ? "PUT" : "POST";
+        const url = isEditing ? `${API_URL}/${noteIdInput.value}` : API_URL;
+
+        try {
+          const response = await fetch(url, {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || "Gagal menyimpan data");
+          }
+
+          Toast.fire({
+            icon: "success",
+            title: `Catatan berhasil ${isEditing ? 'diperbarui' : 'disimpan'}!`,
+          });
+          
+          const pageToRefresh = isEditing ? currentPage : 1;
+          resetForm();
+          fetchNotes(pageToRefresh);
+          loadChartData();
+          switchView('table');
+
+        } catch (error) {
+          Toast.fire({ icon: "error", title: error.message });
+        }
+      };
+
+      const handleTableClick = async (e) => {
+        const editButton = e.target.closest('.edit-btn');
+        const deleteButton = e.target.closest('.delete-btn');
+
+        if (editButton) {
+          const noteId = editButton.dataset.id;
+          const page = editButton.dataset.page;
+          const note = allNotesData[page].find(n => n.id == noteId);
+
+          if (!note) return;
+
+          isEditing = true;
+          formTitle.textContent = "Edit Catatan";
+          document.getElementById('form-subtitle').textContent = `Anda sedang mengedit catatan untuk ${note.full_name}.`;
+
+          noteIdInput.value = note.id;
+          noteDateInput.value = note.note_date_iso;
+          kategoriSelect.value = note.kategori;
+          noteTextInput.value = note.note_text;
+
+          classSelect.value = note.class_id;
+          await fetchStudents(note.class_id);
+          
+          studentSelect.value = note.student_id;
+          
+          switchView('form');
+        }
+
+        if (deleteButton) {
+          const noteId = deleteButton.dataset.id;
+          
+          Swal.fire({
+            title: "Anda yakin?",
+            text: "Catatan ini akan dihapus permanen!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Ya, hapus!",
+            cancelButtonText: "Batal",
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              try {
+                const response = await fetch(`${API_URL}/${noteId}`, {
+                  method: "DELETE",
+                });
+
+                if (!response.ok) {
+                  const err = await response.json();
+                  throw new Error(err.error || "Gagal menghapus");
+                }
+
+                Toast.fire({ icon: "success", title: "Catatan dihapus." });
+                
+                const notesOnPage = allNotesData[currentPage]?.length || 0;
+                let pageToRefresh = currentPage;
+                if (notesOnPage === 1 && currentPage > 1) {
+                    pageToRefresh = currentPage - 1;
+                }
+                
+                fetchNotes(pageToRefresh);
+                loadChartData();
+
+              } catch (error) {
+                Toast.fire({ icon: "error", title: error.message });
+              }
+            }
+          });
+        }
+      };
+
+      viewTabs.forEach(tab => {
+        tab.addEventListener('click', () => switchView(tab.dataset.view));
+      });
+      mobileTabSelect.addEventListener('change', (e) => switchView(e.target.value));
+
+      noteForm.addEventListener("submit", handleFormSubmit);
+      cancelEditButton.addEventListener("click", () => {
+        resetForm();
+        switchView('table');
+      });
+      
+      logoutButton.addEventListener("click", async () => {
+        await fetch("/api/logout", { method: "POST" });
+        window.location.href = "/login.html";
+      });
+
+      classSelect.addEventListener("change", () => {
+        fetchStudents(classSelect.value);
+      });
+
+      notesTbody.addEventListener("click", handleTableClick);
+
+      prevPageButton.addEventListener("click", () => {
+        if (currentPage > 1) fetchNotes(currentPage - 1);
+      });
+      nextPageButton.addEventListener("click", () => {
+        if (currentPage < totalPages) fetchNotes(currentPage + 1);
+      });
+
+      initializeChart();
+      loadChartData();
+      fetchClasses();
+      fetchNotes(1);
+      switchView('table');
+    });
+  </script>
+</body>
+</html>
